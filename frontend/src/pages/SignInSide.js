@@ -14,19 +14,21 @@ import Grid from '@mui/material/Grid';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { useSignInWithEmailAndPassword } from 'react-firebase-hooks/auth'
+import { auth } from '../firebase-config'
 
 const theme = createTheme();
 
 export default function SignInSide() {
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get('email'),
-      password: data.get('password'),
-    });
-  };
-
+  const [
+    signInWithEmailAndPassword,
+    user,
+    loading,
+    error,
+  ] = useSignInWithEmailAndPassword(auth);
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  
   return (
     <ThemeProvider theme={theme}>
       <Grid container component="main" sx={{ height: '100vh' }}>
@@ -61,7 +63,7 @@ export default function SignInSide() {
             <Typography component="h1" variant="h5">
               Sign in
             </Typography>
-            <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 1 }}>
+            <Box component="form" noValidate onSubmit={e => e.preventDefault()} sx={{ mt: 1 }}>
               <TextField
                 margin="normal"
                 required
@@ -70,6 +72,8 @@ export default function SignInSide() {
                 label="Email Address"
                 name="email"
                 autoComplete="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
                 autoFocus
               />
               <TextField
@@ -80,6 +84,8 @@ export default function SignInSide() {
                 label="Password"
                 type="password"
                 id="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
                 autoComplete="current-password"
               />
               <FormControlLabel
@@ -91,6 +97,11 @@ export default function SignInSide() {
                 fullWidth
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
+                disabled={loading}
+                onClick={async () => {
+                  await signInWithEmailAndPassword(email, password);
+                  console.error({error});
+                }}
               >
                 Sign In
               </Button>
